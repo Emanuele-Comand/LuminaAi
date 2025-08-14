@@ -9,30 +9,14 @@ const LuminaChat = () => {
   const [messages, setMessages] = useState([]);
   const [userPrompt, setUserPrompt] = useState("");
 
-  //Stream useEffect
-  useEffect(() => {
-    const eventSource = new EventSource("/api/stream");
-
-    eventSource.onmessage = (e) => {
-      const chunk = JSON.parse(e.data);
-      setMessages((prev) => [...prev, chunk]);
-    };
-
-    eventSource.addEventListener("done", () => eventSource.close());
-    eventSource.addEventListener("error", () => eventSource.close());
-
-    return () => eventSource.close();
-  }, []);
-
   //User prompt Handler
   const handlePrompt = async () => {
     if (!userPrompt.trim()) return;
 
     const userMessage = { role: "user", content: userPrompt };
     setMessages((prev) => [...prev, userMessage]);
-    setUserPrompt("");
 
-    //Sending message to backend
+    // Sending message to backend
     await fetch("/api/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,13 +25,41 @@ const LuminaChat = () => {
       }),
     });
 
-    //Opening stream
+    // Empty message for ai response
+    const assistantMessage = { role: "assistant", content: "" };
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    // Opening stream
     const eventSource = new EventSource("/api/stream");
+
     eventSource.onmessage = (e) => {
+      console.log("Received chunk:", e.data);
       const chunk = JSON.parse(e.data);
-      setMessages((prev) => [...prev, chunk]);
+      console.log("Parsed chunk:", chunk);
+
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage.role === "assistant") {
+          const content =
+            chunk.content || chunk.message?.content || chunk.text || "";
+          lastMessage.content += content;
+        }
+        return newMessages;
+      });
     };
-    eventSource.addEventListener("done", () => eventSource.close());
+
+    eventSource.addEventListener("done", () => {
+      console.log("Stream completed");
+      eventSource.close();
+    });
+
+    eventSource.addEventListener("error", (error) => {
+      console.error("Stream error:", error);
+      eventSource.close();
+    });
+
+    setUserPrompt("");
   };
 
   return (
@@ -75,6 +87,7 @@ const LuminaChat = () => {
             <Input
               className="text-white"
               placeholder="Enter your message here..."
+              value={userPrompt}
               onChange={(e) => setUserPrompt(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handlePrompt();
