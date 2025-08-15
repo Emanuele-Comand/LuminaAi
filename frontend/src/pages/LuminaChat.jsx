@@ -28,7 +28,7 @@ const LuminaChat = () => {
     });
 
     // Empty message for ai response
-    const assistantMessage = { role: "assistant", content: "" };
+    const assistantMessage = { role: "ai", content: "" };
     setMessages((prev) => [...prev, assistantMessage]);
 
     // Opening stream
@@ -42,7 +42,7 @@ const LuminaChat = () => {
       setMessages((prev) => {
         const newMessages = [...prev];
         const lastMessageIndex = newMessages.length - 1;
-        if (newMessages[lastMessageIndex].role === "assistant") {
+        if (newMessages[lastMessageIndex].role === "ai") {
           const content =
             chunk.content || chunk.message?.content || chunk.text || "";
           newMessages[lastMessageIndex] = {
@@ -86,6 +86,7 @@ const LuminaChat = () => {
                   key={index}
                   role={message.role}
                   content={message.content}
+                  isStreaming={isStreaming}
                 ></ChatBubble>
               ))}
             </ScrollArea>

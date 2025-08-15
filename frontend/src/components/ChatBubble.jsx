@@ -1,7 +1,29 @@
-const ChatBubble = ({ role, content }) => {
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
+
+const ChatBubble = ({ role, content, isStreaming }) => {
   const isUser = role === "user";
+  const isAi = role === "ai";
+  const showLoading = isStreaming && isAi && !content.trim();
+
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-2`}>
+    <div
+      className={`flex items-start gap-3 mb-4 ${
+        isUser ? "flex-row-reverse" : "flex-row"
+      }`}
+    >
+      <Avatar className="h-8 w-8 flex-shrink-0">
+        {/* <AvatarImage
+          src={isUser ? "https://github.com/shadcn.png" : "/Lumina logo.png"}
+          alt={isUser ? "User" : "AI"}
+        /> */}
+        <AvatarFallback
+          className={`${
+            isUser ? "bg-white text-black" : "bg-black text-white"
+          }`}
+        >
+          {isUser ? "U" : "AI"}
+        </AvatarFallback>
+      </Avatar>
       <div
         className={`max-w-xs p-4 ${
           isUser
@@ -9,7 +31,15 @@ const ChatBubble = ({ role, content }) => {
             : "rounded-t-lg rounded-br-xl bg-black text-white"
         }`}
       >
-        {content}
+        {showLoading ? (
+          <div className="flex items-center gap-1">
+            <div className="bg-white rounded-full animate-pulse w-2 h-2"></div>
+            <div className="bg-white rounded-full animate-pulse w-2 h-2"></div>
+            <div className="bg-white rounded-full animate-pulse w-2 h-2"></div>
+          </div>
+        ) : (
+          content
+        )}
       </div>
     </div>
   );
