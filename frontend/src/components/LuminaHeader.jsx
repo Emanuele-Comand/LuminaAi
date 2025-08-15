@@ -1,29 +1,64 @@
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink,
-} from "../components/ui/navigation-menu";
+import { useState, useRef } from "react";
 
 const LuminaHeader = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const timeoutRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 150);
+  };
+
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem className="flex gap-24">
-          {/* <img
-            src="/Lumina logo.png"
-            alt="Lumina logo"
-            className="w-9 h-9"
-          ></img> */}
-          <NavigationMenuTrigger>Item One</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <NavigationMenuLink>Link</NavigationMenuLink>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
+    <div className="flex items-center gap-24 relative z-50">
+      <img src="/Lumina_logo_temp.png" alt="Lumina logo" className="w-9 h-9" />
+
+      <div className="relative">
+        <button
+          className="flex items-center gap-2 px-3 py-2 text-white hover:bg-gray-800 rounded-md transition-colors"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          Item One
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        {isDropdownOpen && (
+          <div
+            className="absolute top-full left-0 mt-1 bg-black border border-gray-700 rounded-md shadow-lg min-w-[150px] z-[9999]"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <a
+              href="#"
+              className="block p-2 hover:bg-gray-800 rounded text-white transition-colors"
+            >
+              Link
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

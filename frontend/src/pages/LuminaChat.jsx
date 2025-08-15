@@ -75,11 +75,11 @@ const LuminaChat = () => {
           <LuminaSidebar />
         </div>
         <div className="flex flex-col w-full items-center">
-          <div className="bg-white/20 backdrop-blur-2xl text-white w-full border border-t-0 border-l-0 border-r-0 p-2 pt-2.5">
+          <div className="bg-white/20 backdrop-blur-2xl text-white w-full border border-t-0 border-l-0 border-r-0 p-2 pt-2.5 relative z-10">
             <LuminaHeader></LuminaHeader>
           </div>
           <div>
-            <ScrollArea className="bg-white/20 backdrop-blur-2xl text-white w-[886px] h-[680px] rounded-md border p-4 mb-2 mt-4">
+            <ScrollArea className="bg-white/20 backdrop-blur-2xl text-white w-[886px] h-[680px] rounded-md border p-4 mb-2 mt-4 relative z-0">
               {messages.map((message, index) => (
                 <ChatBubble
                   key={index}
