@@ -3,7 +3,7 @@ const ChatBubble = ({ role, content }) => {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-2`}>
       <div
-        className={`max-w-xs px-4 py- ${
+        className={`max-w-xs p-4 ${
           isUser
             ? "rounded-t-lg rounded-bl-lg bg-white text-black"
             : "rounded-t-lg rounded-br-xl bg-black text-white"
