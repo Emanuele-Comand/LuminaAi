@@ -33,10 +33,23 @@ function createChatRouter(client, opts = {}) {
         model: "phi3:mini",
         messages: pendingMessages,
         stream: true,
+        temperature: 0.7,
+        top_p: 0.9,
+        max_tokens: 1000,
+        num_predict: 1000,
+        top_k: 40,
+        repeat_penalty: 1.1,
       });
 
       for await (const chunk of response) {
-        res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+        const content = chunk.message?.content || chunk.content || "";
+
+        if (content) {
+          // Invia ogni carattere separatamente per un effetto fluido
+          for (const char of content) {
+            res.write(`data: ${JSON.stringify({ content: char })}\n\n`);
+          }
+        }
       }
 
       res.write("event: done\ndata: {}\n\n");

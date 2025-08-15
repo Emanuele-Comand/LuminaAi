@@ -2,7 +2,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 
 const ChatBubble = ({ role, content, isStreaming }) => {
   const isUser = role === "user";
-  const isAi = role === "ai";
+  const isAi = role === "assistant";
   const showLoading = isStreaming && isAi && !content.trim();
 
   return (
