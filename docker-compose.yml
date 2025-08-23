@@ -18,8 +18,23 @@ services:
       - "4000:4000"
     environment:
       - OLLAMA_API_URL=http://ollama:11434
+      - DATABASE_URL=postgresql://lumina_user:lumina_password@postgres:5432/lumina
     depends_on:
       - ollama
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: lumina_postgres
+    environment:
+      POSTGRES_DB: lumina
+      POSTGRES_USER: lumina_user
+      POSTGRES_PASSWORD: lumina_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
 
@@ -37,3 +52,4 @@ networks:
 
 volumes:
   ollama_data:
+  postgres_data:

@@ -19,7 +19,8 @@
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
-    "ollama": "^0.5.17"
+    "ollama": "^0.5.17",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "eslint": "^9.33.0",
