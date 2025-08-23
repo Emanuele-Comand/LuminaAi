@@ -1,4 +1,4 @@
-CREATE EXTESNION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- User table
 CREATE TABLE IF NOT EXISTS users (
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS conversations (
     user_id UUID NOT NULL,
     title VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Messages table 
@@ -27,17 +27,17 @@ CREATE TABLE IF NOT EXISTS messages (
     role VARCHAR(20) NOT NULL CHECK (role IN ('user', 'assistant')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    metadata JSONB DEFAULT '{}',
+    metadata JSONB DEFAULT '{}'
 );
 
 -- INDEXES
 
 -- Indexes to create messages on conversation_id
-CREATE INDEX IF NOT EXISTS idx_messages_conversation_id,
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id
 ON messages(created_at);
 
 -- Indexes ti sort messages by created_at
-CREATE INDEX IF NOT EXISTS idx_messages_created_at,
+CREATE INDEX IF NOT EXISTS idx_messages_created_at
 ON messages(created_at);
 
 -- Indexes to search conversations by user_id
