@@ -1,9 +1,9 @@
 import { useState } from "react";
-import LuminaSidebar from "../components/LuminaSidebar";
-import LuminaHeader from "../components/LuminaHeader";
+import LuminaSidebar from "../components/LuminaChat/LuminaSidebar";
+import LuminaHeader from "../components/LuminaChat/LuminaHeader";
 import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
-import ChatBubble from "../components/ChatBubble";
+import ChatBubble from "../components/LuminaChat/ChatBubble";
 
 const LuminaChat = () => {
   const [messages, setMessages] = useState([]);

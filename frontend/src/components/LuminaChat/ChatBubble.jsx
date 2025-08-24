@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 
 const ChatBubble = ({ role, content, isStreaming }) => {
   const isUser = role === "user";
