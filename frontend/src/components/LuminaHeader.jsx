@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const LuminaHeader = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,7 +19,7 @@ const LuminaHeader = () => {
   };
 
   return (
-    <div className="flex items-center gap-24 relative z-50">
+    <div className="flex items-center gap-24 relative z-50 justify-between px-32">
       <img src="/Lumina_logo_temp.png" alt="Lumina logo" className="w-9 h-9" />
 
       <div className="relative">
@@ -58,6 +59,10 @@ const LuminaHeader = () => {
           </div>
         )}
       </div>
+      <Avatar className="cursor-pointer">
+        <AvatarImage src="https://github.com/shadcn.png" />
+        <AvatarFallback>CN</AvatarFallback>
+      </Avatar>
     </div>
   );
 };
