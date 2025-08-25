@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
 
 const LuminaHeader = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -103,18 +104,24 @@ const LuminaHeader = () => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <a
+            <Link
               href="#"
               className="block px-4 py-2 hover:bg-gray-800 text-white transition-colors border-b border-gray-700 last:border-b-0"
             >
               Login
-            </a>
-            <a
+            </Link>
+            <Link
               href="#"
               className="block px-4 py-2 hover:bg-gray-800 text-white transition-colors border-b border-gray-700 last:border-b-0"
             >
               Signup
-            </a>
+            </Link>
+            {/* <Link
+              href="#"
+              className="block px-4 py-2 hover:bg-gray-800 text-red-500 transition-colors border-b border-gray-700 last:border-b-0"
+            >
+              Logout
+            </Link> */}
           </div>
         )}
       </div>
