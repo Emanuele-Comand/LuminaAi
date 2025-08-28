@@ -6,6 +6,9 @@ import dotenv from "dotenv";
 import createChatRouter from "./routes/chat.js";
 import { Ollama } from "ollama";
 import pool, { testConnection } from "./config/database.js";
+import authRouter from "./routes/auth.js";
+
+app.use("/api/auth", authRouter);
 
 dotenv.config();
 
