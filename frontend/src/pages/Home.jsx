@@ -12,10 +12,6 @@ const Home = () => {
       setVantaEffect(
         HALO({
           el: vantaRef.current,
-          // mouseControls: true,
-          // touchControls: true,
-          // gyroControls: false,
-          // minHeight: 200.00,
         })
       );
     }

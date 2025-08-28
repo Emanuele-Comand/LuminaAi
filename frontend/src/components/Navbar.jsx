@@ -1,6 +1,9 @@
 import { Button } from "./ui/button";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const Navbar = () => {
+  const [isLogin, setIsLogin] = useState(false);
   return (
     <div className="flex justify-between items-center p-4 bg-white/20 px-24">
       <div className="flex items-center gap-8">
@@ -27,12 +30,16 @@ const Navbar = () => {
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <Button className="bg-black text-white cursor-pointer rounded-full p-5 hover:text-black hover:bg-white transition-all duration-300">
-          Sign in
-        </Button>
-        <Button className="bg-transparent text-white border-2 border-black cursor-pointer rounded-full p-5 hover:text-black hover:bg-white hover:border-white transition-all duration-300">
-          Sign up
-        </Button>
+        <Link to="/auth" onClick={() => setIsLogin(true)}>
+          <Button className="bg-black text-white cursor-pointer rounded-full p-5 hover:text-black hover:bg-white transition-all duration-300">
+            Sign in
+          </Button>
+        </Link>
+        <Link to="/auth" onClick={() => setIsLogin(false)}>
+          <Button className="bg-transparent text-white border-2 border-black cursor-pointer rounded-full p-5 hover:text-black hover:bg-white hover:border-white transition-all duration-300">
+            Sign up
+          </Button>
+        </Link>
       </div>
     </div>
   );
