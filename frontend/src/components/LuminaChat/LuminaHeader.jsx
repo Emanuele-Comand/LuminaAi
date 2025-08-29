@@ -36,7 +36,7 @@ const LuminaHeader = () => {
 
   return (
     <div className="flex items-center gap-24 relative z-50 justify-between px-32">
-      <img src="/lumina_logo.png" alt="Lumina logo" className="w-9 h-9" />
+      <img src="/lumina_logo.svg" alt="Lumina logo" className="w-9 h-9" />
 
       <div className="relative">
         <button
