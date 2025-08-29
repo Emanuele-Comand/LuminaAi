@@ -8,15 +8,18 @@ import { Ollama } from "ollama";
 import pool, { testConnection } from "./config/database.js";
 import authRouter from "./routes/auth.js";
 
-app.use("/api/auth", authRouter);
-
 dotenv.config();
 
 const app = express();
+
+// MIDDLEWARE
 app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
+
+// API ROUTES
+app.use("/api/auth", authRouter);
 
 const client = new Ollama({ host: "http://ollama:11434" });
 

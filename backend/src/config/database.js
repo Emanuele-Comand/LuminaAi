@@ -14,10 +14,11 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
+  ssl: false,
+  // CODE FOR PRODUCTION
+  // process.env.NODE_ENV === "production"
+  //   ? { rejectUnauthorized: false }
+  //   : false,
 
   statement_timeout: 30000,
   query_timeout: 30000,
