@@ -22,6 +22,11 @@ export const useAuthStore = create(
       isLoading: false,
       error: null,
 
+      // Token state (in memoria - non persistito)
+      accessToken: null,
+      tokenExpiresAt: null,
+      refreshTimeoutId: null,
+
       // Auth actions
       login: async (email, password) => {
         set({ isLoading: true, error: null });
@@ -33,6 +38,7 @@ export const useAuthStore = create(
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ email, password }),
+            credentials: "include", // Include cookies per refresh token
           });
 
           const data = await response.json();
@@ -41,15 +47,20 @@ export const useAuthStore = create(
             throw new Error(data.message || "Login failed");
           }
 
-          // Salva il token nel localStorage
-          localStorage.setItem("token", data.token);
+          // Salva access token IN MEMORIA (non localStorage!)
+          const expiresAt = Date.now() + data.expiresIn;
 
           set({
             user: data.user,
             isAuthenticated: true,
             isLoading: false,
             error: null,
+            accessToken: data.accessToken,
+            tokenExpiresAt: expiresAt,
           });
+
+          // Avvia auto-refresh
+          get().scheduleTokenRefresh();
 
           return { success: true };
         } catch (error) {
@@ -74,6 +85,7 @@ export const useAuthStore = create(
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({ email, password, name }),
+              credentials: "include", // Include cookies per refresh token
             }
           );
 
@@ -83,15 +95,20 @@ export const useAuthStore = create(
             throw new Error(data.message || "Signup failed");
           }
 
-          // Salva il token nel localStorage
-          localStorage.setItem("token", data.token);
+          // Salva access token IN MEMORIA (non localStorage!)
+          const expiresAt = Date.now() + data.expiresIn;
 
           set({
             user: data.user,
             isAuthenticated: true,
             isLoading: false,
             error: null,
+            accessToken: data.accessToken,
+            tokenExpiresAt: expiresAt,
           });
+
+          // Avvia auto-refresh
+          get().scheduleTokenRefresh();
 
           return { success: true };
         } catch (error) {
@@ -104,60 +121,134 @@ export const useAuthStore = create(
         }
       },
 
-      logout: () => {
-        // Rimuovi il token dal localStorage
-        localStorage.removeItem("token");
+      logout: async () => {
+        const { refreshTimeoutId } = get();
+
+        // Cancella il timeout del refresh
+        if (refreshTimeoutId) {
+          clearTimeout(refreshTimeoutId);
+        }
+
+        try {
+          // Chiama logout API per revocare refresh token
+          await fetch("http://localhost:4000/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (error) {
+          console.error("Logout API error:", error);
+        }
 
         set({
           user: null,
           isAuthenticated: false,
           isLoading: false,
           error: null,
+          accessToken: null,
+          tokenExpiresAt: null,
+          refreshTimeoutId: null,
         });
       },
 
-      checkAuth: async () => {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          set({
-            user: null,
-            isAuthenticated: false,
-          });
-          return false;
-        }
-
+      // Auto-refresh del token
+      refreshToken: async () => {
         try {
-          const response = await fetch("http://localhost:4000/api/auth/me", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+          const response = await fetch(
+            "http://localhost:4000/api/auth/refresh",
+            {
+              method: "POST",
+              credentials: "include",
+            }
+          );
 
           if (!response.ok) {
-            throw new Error("Token invalid");
+            throw new Error("Token refresh failed");
           }
 
           const data = await response.json();
+          const expiresAt = Date.now() + data.expiresIn;
 
           set({
+            accessToken: data.accessToken,
+            tokenExpiresAt: expiresAt,
             user: data.user,
             isAuthenticated: true,
           });
 
+          get().scheduleTokenRefresh();
           return true;
         } catch (error) {
-          console.error("Auth check error:", error);
-          // Rimuovi il token invalido
-          localStorage.removeItem("token");
-          set({
-            user: null,
-            isAuthenticated: false,
-          });
+          console.error("Token refresh failed:", error);
+          get().logout();
           return false;
         }
+      },
+
+      // Programma il prossimo refresh
+      scheduleTokenRefresh: () => {
+        const { tokenExpiresAt, refreshTimeoutId } = get();
+
+        // Cancella timeout precedente se esiste
+        if (refreshTimeoutId) {
+          clearTimeout(refreshTimeoutId);
+        }
+
+        if (!tokenExpiresAt) return;
+
+        // Refresh 1 minuto prima della scadenza
+        const refreshTime = tokenExpiresAt - Date.now() - 60000;
+
+        if (refreshTime > 0) {
+          const timeoutId = setTimeout(() => {
+            get().refreshToken();
+          }, refreshTime);
+
+          set({ refreshTimeoutId: timeoutId });
+        }
+      },
+
+      checkAuth: async () => {
+        const { accessToken } = get();
+
+        // Se abbiamo un token in memoria, verifichiamolo
+        if (accessToken) {
+          try {
+            const response = await fetch("http://localhost:4000/api/auth/me", {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              set({
+                user: data.user,
+                isAuthenticated: true,
+              });
+              return true;
+            }
+          } catch (error) {
+            console.error("Token validation error:", error);
+          }
+        }
+
+        // Prova refresh token se access token non valido/assente
+        return await get().refreshToken();
+      },
+
+      // Utility per ottenere headers autenticati
+      getAuthHeaders: () => {
+        const { accessToken } = get();
+        return accessToken
+          ? {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            }
+          : {
+              "Content-Type": "application/json",
+            };
       },
 
       clearError: () => {
@@ -170,6 +261,7 @@ export const useAuthStore = create(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         authMode: state.authMode,
+        // NON salvare accessToken, tokenExpiresAt, refreshTimeoutId nel localStorage!
       }),
     }
   )

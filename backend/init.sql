@@ -30,6 +30,17 @@ CREATE TABLE IF NOT EXISTS messages (
     metadata JSONB DEFAULT '{}'
 );
 
+-- JWT Tokens refresh table
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    is_revoked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- INDEXES
 
 -- Indexes to create messages on conversation_id
@@ -51,6 +62,11 @@ ON conversations(updated_at);
 -- Indexes to search full-text messages
 CREATE INDEX IF NOT EXISTS idx_messages_content_fts
 ON messages USING GIN(to_tsvector('english', content));
+
+-- Jwt Tokens refresh indexes
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expires_at);
 
 -- TIMESTAMP UPDATE TRIGGERS
 

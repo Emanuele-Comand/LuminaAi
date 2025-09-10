@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 
 const LuminaHeader = () => {
@@ -8,6 +8,9 @@ const LuminaHeader = () => {
   const [isItemDropdownOpen, setIsItemDropdownOpen] = useState(false);
   const timeoutRef = useRef(null);
   const itemTimeoutRef = useRef(null);
+  const navigate = useNavigate();
+
+  const { user, logout } = useAuthStore();
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
@@ -33,6 +36,20 @@ const LuminaHeader = () => {
     itemTimeoutRef.current = setTimeout(() => {
       setIsItemDropdownOpen(false);
     }, 150);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/auth");
+  };
+
+  const getUserInitials = () => {
+    if (!user?.name) return "U";
+    const names = user.name.split(" ");
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return user.name[0].toUpperCase();
   };
 
   return (
@@ -96,21 +113,30 @@ const LuminaHeader = () => {
           onMouseLeave={handleMouseLeave}
         >
           <AvatarImage src="" />
-          <AvatarFallback>U</AvatarFallback>
+          <AvatarFallback>{getUserInitials()}</AvatarFallback>
         </Avatar>
 
         {isDropdownOpen && (
           <div
-            className="absolute top-full right-0 mt-1 bg-black border border-gray-700 rounded-md shadow-lg min-w-[150px] z-[9999]"
+            className="absolute top-full right-0 mt-1 bg-black border border-gray-700 rounded-md shadow-lg min-w-[200px] z-[9999]"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <Link
-              href="#"
-              className="block px-4 py-2 hover:bg-gray-800 text-red-500 transition-colors border-b border-gray-700 last:border-b-0"
-            >
-              Logout
-            </Link>
+            <div className="px-4 py-3 border-b border-gray-700">
+              <p className="text-white font-medium text-sm">
+                {user?.name || "Utente"}
+              </p>
+              <p className="text-gray-400 text-xs">{user?.email || ""}</p>
+            </div>
+
+            <div className="py-1">
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-gray-800 text-red-500 transition-colors text-sm border-t border-gray-700 curosor-pointer"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -1,24 +1,29 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import LuminaSidebar from "../components/LuminaChat/LuminaSidebar";
 import LuminaHeader from "../components/LuminaChat/LuminaHeader";
 import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import ChatBubble from "../components/LuminaChat/ChatBubble";
 
+const generateMessageId = () =>
+  `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
 const LuminaChat = () => {
   const [messages, setMessages] = useState([]);
   const [userPrompt, setUserPrompt] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
 
-  //User prompt Handler
-  const handlePrompt = async () => {
+  const handlePrompt = useCallback(async () => {
     if (!userPrompt.trim() || isStreaming) return;
 
     setIsStreaming(true);
-    const userMessage = { role: "user", content: userPrompt };
+    const userMessage = {
+      id: generateMessageId(),
+      role: "user",
+      content: userPrompt,
+    };
     setMessages((prev) => [...prev, userMessage]);
 
-    // Sending message to backend
     await fetch("/api/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -27,11 +32,13 @@ const LuminaChat = () => {
       }),
     });
 
-    // Empty message for ai response
-    const assistantMessage = { role: "assistant", content: "" };
+    const assistantMessage = {
+      id: generateMessageId(),
+      role: "assistant",
+      content: "",
+    };
     setMessages((prev) => [...prev, assistantMessage]);
 
-    // Opening stream
     const eventSource = new EventSource("/api/stream");
 
     eventSource.onmessage = (e) => {
@@ -40,16 +47,16 @@ const LuminaChat = () => {
       console.log("Parsed chunk:", chunk);
 
       setMessages((prev) => {
-        const newMessages = [...prev];
-        const lastMessageIndex = newMessages.length - 1;
-        if (newMessages[lastMessageIndex].role === "assistant") {
-          const content = chunk.content || "";
-          newMessages[lastMessageIndex] = {
-            ...newMessages[lastMessageIndex],
-            content: newMessages[lastMessageIndex].content + content,
+        const lastIndex = prev.length - 1;
+        if (lastIndex >= 0 && prev[lastIndex].role === "assistant") {
+          const updatedMessages = [...prev];
+          updatedMessages[lastIndex] = {
+            ...prev[lastIndex],
+            content: prev[lastIndex].content + (chunk.content || ""),
           };
+          return updatedMessages;
         }
-        return newMessages;
+        return prev;
       });
     };
 
@@ -66,7 +73,26 @@ const LuminaChat = () => {
     });
 
     setUserPrompt("");
-  };
+  }, [userPrompt, isStreaming, messages]);
+
+  const handleInputChange = useCallback((e) => {
+    setUserPrompt(e.target.value);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        handlePrompt();
+      }
+    },
+    [handlePrompt]
+  );
+
+  const inputPlaceholder = useMemo(
+    () =>
+      isStreaming ? "Streaming in corso..." : "Enter your message here...",
+    [isStreaming]
+  );
 
   return (
     <>
@@ -80,29 +106,23 @@ const LuminaChat = () => {
           </div>
           <div>
             <ScrollArea className="bg-white/20 backdrop-blur-2xl text-white w-[886px] h-[680px] rounded-md border p-4 mb-2 mt-4 relative z-0">
-              {messages.map((message, index) => (
+              {messages.map((message) => (
                 <ChatBubble
-                  key={index}
+                  key={message.id}
                   role={message.role}
                   content={message.content}
-                  isStreaming={isStreaming}
-                ></ChatBubble>
+                  isStreaming={isStreaming && message.role === "assistant"}
+                />
               ))}
             </ScrollArea>
           </div>
           <div className="bg-white/20 backdrop-blur-2xl rounded-md w-3/4 mb-4">
             <Input
               className="text-white"
-              placeholder={
-                isStreaming
-                  ? "Streaming in corso..."
-                  : "Enter your message here..."
-              }
+              placeholder={inputPlaceholder}
               value={userPrompt}
-              onChange={(e) => setUserPrompt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handlePrompt();
-              }}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               disabled={isStreaming}
             />
           </div>

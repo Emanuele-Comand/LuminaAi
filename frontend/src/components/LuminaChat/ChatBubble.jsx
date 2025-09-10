@@ -1,6 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { memo } from "react";
 
-const ChatBubble = ({ role, content, isStreaming }) => {
+const ChatBubble = memo(({ role, content, isStreaming }) => {
   const isUser = role === "user";
   const isAi = role === "assistant";
   const showLoading = isStreaming && isAi && !content.trim();
@@ -43,6 +44,8 @@ const ChatBubble = ({ role, content, isStreaming }) => {
       </div>
     </div>
   );
-};
+});
+
+ChatBubble.displayName = "ChatBubble";
 
 export default ChatBubble;

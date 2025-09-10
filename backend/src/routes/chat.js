@@ -45,10 +45,7 @@ function createChatRouter(client, opts = {}) {
         const content = chunk.message?.content || chunk.content || "";
 
         if (content) {
-          // Invia ogni carattere separatamente per un effetto fluido
-          for (const char of content) {
-            res.write(`data: ${JSON.stringify({ content: char })}\n\n`);
-          }
+          res.write(`data: ${JSON.stringify({ content: content })}\n\n`);
         }
       }
 
